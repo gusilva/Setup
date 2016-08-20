@@ -89,6 +89,10 @@ fi
 #Sublime packages
 subl_pkg "AdvancedNewFile" "https://github.com/skuroda/Sublime-AdvancedNewFile.git" 
 subl_pkg "Theme - Phoenix" "https://github.com/netatoo/phoenix-theme.git"
+subl_pkg "emment-sublime"  "https://github.com/sergeche/emmet-sublime.git"
+subl_pkg "SublimeAllAutocomplete"  "https://github.com/alienhard/SublimeAllAutocomplete"
+subl_pkg "DocBlockr"  "https://github.com/spadgos/sublime-jsdocs.git"
+subl_pkg "SublimeCodeIntel"  "https://github.com/SublimeCodeIntel/SublimeCodeIntel.git"
 
 #Sublime settings
 cp "Preferences.sublime-settings" "${HOME}/.config/sublime-text-3/Packages/User/" && msg 6 "Sublime Preferences created"
