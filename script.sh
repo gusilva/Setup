@@ -11,7 +11,7 @@ LEVEL[5]="\033[0;33m[Notice]"
 
 #Mensage Function
 function msg {
-        echo -e "\n${LEVEL[$1]} $2\n"
+        echo -e "${LEVEL[$1]} $2"
 }
 
 #Distro check
@@ -45,8 +45,17 @@ function package_install {
         done
 }
 
+function subl_pkg {
+    if [ -d "${HOME}/.config/sublime-text-3/Packages/$1" ]; then
+        msg 5 "Package $1 already installed"
+    else
+        git clone $2 "$1"
+        mv "$1" "${HOME}/.config/sublime-text-3/Packages/"
+    fi
+}
+
 msg 6 "Updating repos..."
-eval sudo ${PKG_MGR} update
+#eval sudo ${PKG_MGR} update
 
 package_install "${PKGS[@]}"
 
@@ -68,6 +77,22 @@ else
         sudo ln -s /opt/sublime_text_3/sublime_text /usr/bin/sublime
         rm sublime_text_3_build_3114_x64.tar.bz2
 fi
+
+if [ -f "${HOME}/.config/sublime-text-3/Installed Packages/Package Control.sublime-package" ] ; then
+    msg 5 "Sublime packages are set"
+else
+    wget --no-check-certificate https://sublime.wbond.net/Package%20Control.sublime-package    
+    mv "Package Control.sublime-package" "${HOME}/.config/sublime-text-3/Installed Packages/Package Control.sublime-package"
+    msg 6 "Sublime successfully set"
+fi
+
+#Sublime packages
+subl_pkg "AdvancedNewFile" "https://github.com/skuroda/Sublime-AdvancedNewFile.git" 
+subl_pkg "Theme - Phoenix" "https://github.com/netatoo/phoenix-theme.git"
+
+#Sublime settings
+cp "Preferences.sublime-settings" "${HOME}/.config/sublime-text-3/Packages/User/" && msg 6 "Sublime Preferences created"
+cp "Default.sublime-keymap" "${HOME}/.config/sublime-text-3/Packages/User/Default \(Linux\).sublime-keymap"
 
 #VIM setups
 cp vimpackage "${HOME}/.vimrc" && msg 6 ".vimrc file created"
