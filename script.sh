@@ -1,8 +1,11 @@
 #!/bin/bash
 START=`date +%s`
 
+read -e -p "Do you need sublime text (y/n)? " ans
+
 #log file
 LOGFILE="script.log"
+SUBLIME="${ans,,}"
 
 #Security Level
 LEVEL[6]="\033[0;32m[Info]"
@@ -30,13 +33,13 @@ PKGS=(git vim zsh)
 
 #Check Function
 function package_check {
-        command -v $1 &>> $LOGFILE
+        command -v $1 1> /dev/null 2>> $LOGFILE
 }
 
 function package_install {
         for i in "$@"
         do
-                package_check $i && msg 5 "Package already installed" && continue;
+                package_check $i && msg 5 "Package $i already installed" && continue;
                 if eval sudo ${PKG_MGR} install $i; then
                         msg 6 "Package ${i} installed"
                 else
@@ -67,36 +70,38 @@ else
 fi
 
 #Install sublime text
-if package_check "sublime"; then
-        msg 5 "Sublime Text 3 is already installed"
-else
-        msg 6 "Installing Sublime Text"
-        wget https://download.sublimetext.com/sublime_text_3_build_3114_x64.tar.bz2
-        tar vxjf sublime_text_3_build_3114_x64.tar.bz2
-        sudo mv sublime_text_3 /opt/
-        sudo ln -s /opt/sublime_text_3/sublime_text /usr/bin/sublime
-        rm sublime_text_3_build_3114_x64.tar.bz2
+if [[ $SUBLIME =~ ^y ]]; then
+    if package_check "sublime"; then
+            msg 5 "Sublime Text 3 is already installed"
+    else
+            msg 6 "Installing Sublime Text"
+            wget https://download.sublimetext.com/sublime_text_3_build_3114_x64.tar.bz2
+            tar vxjf sublime_text_3_build_3114_x64.tar.bz2
+            sudo mv sublime_text_3 /opt/
+            sudo ln -s /opt/sublime_text_3/sublime_text /usr/bin/sublime
+            rm sublime_text_3_build_3114_x64.tar.bz2
+    fi
+
+    if [ -f "${HOME}/.config/sublime-text-3/Installed Packages/Package Control.sublime-package" ] ; then
+        msg 5 "Sublime packages are set"
+    else
+        wget --no-check-certificate https://sublime.wbond.net/Package%20Control.sublime-package    
+        mv "Package Control.sublime-package" "${HOME}/.config/sublime-text-3/Installed Packages/Package Control.sublime-package"
+        msg 6 "Sublime successfully set"
+    fi
+
+    #Sublime packages
+    subl_pkg "AdvancedNewFile" "https://github.com/skuroda/Sublime-AdvancedNewFile.git" 
+    subl_pkg "Theme - Phoenix" "https://github.com/netatoo/phoenix-theme.git"
+    subl_pkg "emment-sublime"  "https://github.com/sergeche/emmet-sublime.git"
+    subl_pkg "SublimeAllAutocomplete"  "https://github.com/alienhard/SublimeAllAutocomplete"
+    subl_pkg "DocBlockr"  "https://github.com/spadgos/sublime-jsdocs.git"
+    subl_pkg "SublimeCodeIntel"  "https://github.com/SublimeCodeIntel/SublimeCodeIntel.git"
+
+    #Sublime settings
+    cp "Preferences.sublime-settings" "${HOME}/.config/sublime-text-3/Packages/User/" && msg 6 "Sublime Preferences created"
+    cp "Default.sublime-keymap" "${HOME}/.config/sublime-text-3/Packages/User/Default \(Linux\).sublime-keymap"
 fi
-
-if [ -f "${HOME}/.config/sublime-text-3/Installed Packages/Package Control.sublime-package" ] ; then
-    msg 5 "Sublime packages are set"
-else
-    wget --no-check-certificate https://sublime.wbond.net/Package%20Control.sublime-package    
-    mv "Package Control.sublime-package" "${HOME}/.config/sublime-text-3/Installed Packages/Package Control.sublime-package"
-    msg 6 "Sublime successfully set"
-fi
-
-#Sublime packages
-subl_pkg "AdvancedNewFile" "https://github.com/skuroda/Sublime-AdvancedNewFile.git" 
-subl_pkg "Theme - Phoenix" "https://github.com/netatoo/phoenix-theme.git"
-subl_pkg "emment-sublime"  "https://github.com/sergeche/emmet-sublime.git"
-subl_pkg "SublimeAllAutocomplete"  "https://github.com/alienhard/SublimeAllAutocomplete"
-subl_pkg "DocBlockr"  "https://github.com/spadgos/sublime-jsdocs.git"
-subl_pkg "SublimeCodeIntel"  "https://github.com/SublimeCodeIntel/SublimeCodeIntel.git"
-
-#Sublime settings
-cp "Preferences.sublime-settings" "${HOME}/.config/sublime-text-3/Packages/User/" && msg 6 "Sublime Preferences created"
-cp "Default.sublime-keymap" "${HOME}/.config/sublime-text-3/Packages/User/Default \(Linux\).sublime-keymap"
 
 #VIM setups
 cp vimpackage "${HOME}/.vimrc" && msg 6 ".vimrc file created"
